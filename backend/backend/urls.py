@@ -17,7 +17,7 @@ Including another URLconf
 from xml.etree.ElementInclude import include
 from django.contrib import admin
 from django.urls import path
-from taxSystem.views import current_user, create_employee, get_employees, get_salary_info
+from taxSystem.views import current_user, create_employee, get_employees, get_salary_info, get_tax_amount_due, pay_tax
 from rest_framework.authtoken.views import obtain_auth_token
 
 # router = DefaultRouter()
@@ -30,6 +30,9 @@ urlpatterns = [
     path('api/create_employee/', create_employee, name='create-employee'),
     path('api/employees/', get_employees, name='get-employees'),
     path('api/salary_info/', get_salary_info, name='salary-info'),
+
+    path('api/tax/amount_due/', get_tax_amount_due, name='amount-due'),
+    path('api/tax/pay/', pay_tax, name='pay-tax'),
 
     # path('api-auth/', include('rest_framework.urls')),
     # path('', views.home, name='home'),

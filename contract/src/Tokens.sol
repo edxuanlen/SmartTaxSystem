@@ -9,6 +9,10 @@ import {console} from "forge-std/console.sol";
 contract RMBToken is ERC20 {
     address public admin;
 
+    function decimals() public view virtual override returns (uint8) {
+        return 0;
+    }
+
     constructor() ERC20("RMB Token", "RMB") {
         admin = msg.sender;
     }
@@ -23,6 +27,10 @@ contract RMBToken is ERC20 {
 
 contract TaxToken is ERC20 {
     address public admin;
+
+    function decimals() public view virtual override returns (uint8) {
+        return 0;
+    }
 
     constructor() ERC20("Tax Token", "TAX") {
         admin = msg.sender;

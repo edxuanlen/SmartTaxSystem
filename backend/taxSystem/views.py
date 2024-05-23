@@ -129,3 +129,26 @@ def get_salary_info(request):
     except Exception as e:
         print(e)
         return JsonResponse({'error': str(e)}, status=400)
+
+from . import TaxMgrContract, Web3Provider
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_tax_amount_due(request):
+    try:
+        account =  Web3Provider.eth.account.from_key(request.user.private_key)
+        res = TaxMgrContract.functions.getTaxes().call({"from": account.address})
+        # print("taxes: ", res)
+        return JsonResponse({'tax_amount_due': res})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def pay_tax(request):
+    return JsonResponse({'success': True})
+

@@ -71,10 +71,18 @@ contract TaxManagement {
         taxBrackets.push(TaxBracket(type(uint256).max, 45));
     }
 
+    function getRMBTokenAddress() public view returns (address) {
+        return address(rmbToken);
+    }
+
+    function getTaxTokenAddress() public view returns (address) {
+        return address(taxToken);
+    }
+
     function addUnit(address _unitAddress) public onlyAdmin {
         require(units[_unitAddress].unitAddress == address(0), "Unit already exists");
         units[_unitAddress] = Unit(_unitAddress, new address[](0), 0);
-        rmbToken.mint(_unitAddress, 100000 * 10**18); // Mint 100,000 RMB Token
+        rmbToken.mint(_unitAddress, 100000); // Mint 100,000 RMB Token
         emit UnitAdded(_unitAddress);
     }
 
@@ -109,7 +117,9 @@ contract TaxManagement {
         uint256 netSalary = grossSalary - taxAmount;
 
         taxInfos[_employeeAddress] = TaxInfo(taxAmount, netSalary);
-        taxToken.mint(msg.sender, taxAmount); // Mint Tax Token to the unit
+
+        taxToken.mint(_employeeAddress, taxAmount); // Mint Tax Token to the unit
+        taxToken.transferFrom(_employeeAddress, msg.sender, taxAmount); // Transfer Tax Token to admin
 
         emit TaxCalculated(_employeeAddress, taxAmount, netSalary);
     }
