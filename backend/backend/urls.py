@@ -17,11 +17,20 @@ Including another URLconf
 from xml.etree.ElementInclude import include
 from django.contrib import admin
 from django.urls import path
-from taxSystem.views import login_view
+from taxSystem.views import current_user, create_employee, get_employees, get_salary_info
+from rest_framework.authtoken.views import obtain_auth_token
+
+# router = DefaultRouter()
+# router.register(r'users', UserViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/login/', login_view, name='login'),
+    path('api/login/', obtain_auth_token, name='login'),
+    path('api/current_user/', current_user, name='current-user'),
+    path('api/create_employee/', create_employee, name='create-employee'),
+    path('api/employees/', get_employees, name='get-employees'),
+    path('api/salary_info/', get_salary_info, name='salary-info'),
+
     # path('api-auth/', include('rest_framework.urls')),
     # path('', views.home, name='home'),
     # path('tax_info/', views.tax_info, name='tax_info'),

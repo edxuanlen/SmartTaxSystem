@@ -19,7 +19,6 @@ contract TaxManagement {
 
     struct Unit {
         address unitAddress;
-        string unitName;
         address[] employees;
         uint256 totalTaxDue;
     }
@@ -41,10 +40,10 @@ contract TaxManagement {
     mapping(address => TaxInfo) public taxInfos;
 
     event EmployeeAdded(address indexed unitAddress, address indexed employeeAddress, uint256 monthlySalary);
-    event UnitAdded(address indexed unitAddress, string unitName);
+    event UnitAdded(address indexed unitAddress);
     event TaxCalculated(address indexed employeeAddress, uint256 taxAmount, uint256 netSalary);
     event TaxSettlement(address indexed unitAddress, uint256 totalTaxDue);
-    event TaxPayment(address indexed unitAddress, uint256 taxAmount);
+    event TaxPayment(address indexed unitAddress, uint256 taxAmount, uint256 totalTaxDue);
 
     modifier onlyAdmin() {
         require(msg.sender == admin, "Only admin can perform this action");
@@ -72,11 +71,11 @@ contract TaxManagement {
         taxBrackets.push(TaxBracket(type(uint256).max, 45));
     }
 
-    function addUnit(address _unitAddress, string memory _unitName) public onlyAdmin {
+    function addUnit(address _unitAddress) public onlyAdmin {
         require(units[_unitAddress].unitAddress == address(0), "Unit already exists");
-        units[_unitAddress] = Unit(_unitAddress, _unitName, new address[](0), 0);
+        units[_unitAddress] = Unit(_unitAddress, new address[](0), 0);
         rmbToken.mint(_unitAddress, 100000 * 10**18); // Mint 100,000 RMB Token
-        emit UnitAdded(_unitAddress, _unitName);
+        emit UnitAdded(_unitAddress);
     }
 
     function addEmployee(address _employeeAddress, uint256 _monthlySalary) public onlyUnit {
@@ -129,20 +128,25 @@ contract TaxManagement {
         emit TaxSettlement(msg.sender, totalTaxDue);
     }
 
-    function payTaxes(address payer, uint256 rmbAmount, uint256 taxAmount) public onlyUnit {
+    function payTaxes(address payer, uint256 amount) public onlyUnit {
         Unit storage unit = units[msg.sender];
         require(unit.totalTaxDue > 0, "No taxes due for this unit");
+        require(amount <= unit.totalTaxDue, "No taxes due for this unit");
 
         // 调用 RMB Token 合约的 transferFrom 函数，将 RMB Token 转账给 admin
-        rmbToken.transferFrom(payer, admin, rmbAmount);
+        rmbToken.transferFrom(payer, admin, amount);
 
         // 调用 Tax Token 合约的 transferFrom 函数，将 Tax Token 转账给 admin
-        taxToken.transferFrom(payer, admin, taxAmount);
+        taxToken.transferFrom(payer, admin, amount);
 
         // 清空税款
-        unit.totalTaxDue = 0;
+        unit.totalTaxDue -= amount;
 
-        emit TaxPayment(msg.sender, unit.totalTaxDue);
+        emit TaxPayment(msg.sender, amount, unit.totalTaxDue);
     }
 
+    function getTaxes() public view returns (uint256 taxes) {
+        Unit storage unit = units[msg.sender];
+        return unit.totalTaxDue;
+    }
 }

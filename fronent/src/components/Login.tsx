@@ -1,19 +1,67 @@
 // src/components/Login.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, Checkbox, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { getCookies, getTokenFromCookie, setCookie, setTokenCookie } from '../utils/cookie';
+import { flushSync } from 'react-dom';
 
 const Login: React.FC = () => {
     const [loading, setLoading] = useState(false);
+    const { setUser } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const cookies = getCookies();
+        const token = cookies?.token;
+        if (token !== undefined) {
+            switch (cookies?.user_type) {
+                case 'admin':
+                    navigate('/admin');
+                    break;
+                case 'unit':
+                    navigate('/unit');
+                    break;
+                case 'employee':
+                    navigate('/galary_details');
+                    break;
+                case undefined:
+                    navigate('/');
+                    break;
+            };
+        }
+    }, []);
 
     const onFinish = async (values: { username: string; password: string }) => {
         setLoading(true);
         try {
-            const response = await axios.post('/api/login/', values);
-            if (response.data.success) {
-                message.success('Login successful!');
-                // 处理登录成功逻辑，如重定向到主页
+            let response = await axios.post('/api/login/', values);
+            if (response.data.token) {
+                setTokenCookie(response.data.token);
+                // setCookie('user_type', response.data.user_type);
+
+                response = await axios.get('/api/current_user/', {
+                    headers: { Authorization: `Token ${response.data.token}` }
+                });
+                message.info('User fetched successfully');
+                setUser(response.data.user);
+                setCookie('user_type', response.data.user.user_type);
+
+                console.log(response.data.user);
+                switch (response.data.user.user_type) {
+                    case 'admin':
+                        navigate('/admin');
+                        break;
+                    case 'unit':
+                        navigate('/unit');
+                        break;
+                    case 'employee':
+                        navigate('/galary_details');
+                        break;
+                };
+                window.location.reload();
             } else {
                 message.error('Login failed: ' + response.data.message);
             }
