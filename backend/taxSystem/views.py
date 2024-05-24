@@ -156,9 +156,6 @@ def get_employees(request):
             return JsonResponse({'error': str(e)}, status=400)
 
 
-from .models import Salary
-from .serializers import SalarySerializer
-
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -166,30 +163,48 @@ def get_salary_info(request):
     try:
         # 获取当前用户
         user = request.user
+         # 获取账户
+        account =  Web3Provider.eth.account.from_key(user.private_key)
+        print("Account: ", account)
 
-        # 从区块链获取薪酬记录
-        salary_records = get_salary_records_from_blockchain(user.private_key)
+        # 获取最新区块
+        latest_block = Web3Provider.eth.block_number
 
-        # 更新数据库
-        for record in salary_records:
-            Salary.objects.update_or_create(
-                user=user,
-                salary_date=record['salary_date'],
-                defaults={
-                    'gross_salary': record['gross_salary'],
-                    'net_salary': record['net_salary'],
-                    'tax_amount': record['tax_amount']
-                }
-            )
+        # 定义事件过滤器，假设事件名为TaxCalculated
+        event_filter = TaxMgrContract.events.TaxCalculated.create_filter(
+            fromBlock=0,  # 可调整为特定区块范围
+            toBlock=latest_block,
+            argument_filters={'employeeAddress': account.address}
+        )
 
-        # 获取用户的所有薪酬记录
-        salaries = Salary.objects.filter(user=user)
-        serializer = SalarySerializer(salaries, many=True)
-        return JsonResponse({'salaries': serializer.data}, safe=False)
+        # 获取事件日志
+        events = event_filter.get_all_entries()
+
+        salary_infos = []
+
+        for event in events:
+            dt = datetime.datetime.fromtimestamp(
+            Web3Provider.eth.get_block(event.blockNumber).timestamp)
+            date = dt.strftime('%Y-%m-%d %H:%M:%S')
+
+            print("Event: ", event)
+            print("employee address:", event['args']['employeeAddress'])
+            print("taxAmount:", event['args']['taxAmount'])
+            print("netSalary:", event['args']['netSalary'])
+            print()
+
+            salary_infos.append({
+                'date': date,
+                'monthly_salary': user.monthly_salary,
+                'tax_amount': event['args']['taxAmount'],
+                'net_salary': event['args']['netSalary'],
+            })
+
+            return JsonResponse({'salary_infos': salary_infos})
 
     except Exception as e:
         print(e)
-        return JsonResponse({'error': str(e)}, status=400)
+        return JsonResponse({'error': str(e)}, status=500)
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])

@@ -18,28 +18,28 @@ interface TaxRecord {
 const TaxRecords: React.FC = () => {
     const [records, setRecords] = useState<TaxRecord[]>([]);
 
-    useEffect(() => {
-        const fetchEmployees = async () => {
-            try {
-                const response = await axios.get('/api/tax/unit_records/', {
-                    headers: {
-                        'Authorization': `Token ${getTokenFromCookie()}`,
-                    },
-                });
+    const fetchRecords = async () => {
+        try {
+            const response = await axios.get('/api/tax/unit_records/', {
+                headers: {
+                    'Authorization': `Token ${getTokenFromCookie()}`,
+                },
+            });
 
-                if (response.data.success) {
-                    message.success('获取成功');
-                    setRecords(response.data.records);
-                } else {
-                    message.error('获取失败');
-                }
-
-            } catch (error) {
-                console.error(error);
+            if (response.data.success) {
+                message.success('获取成功');
+                await setRecords(response.data.records);
+            } else {
                 message.error('获取失败');
             }
-        };
-        fetchEmployees();
+
+        } catch (error) {
+            console.error(error);
+            message.error('获取失败');
+        }
+    };
+    useEffect(() => {
+        fetchRecords();
     }, []);
 
     const handleAudit = async (record: any) => {
@@ -54,22 +54,15 @@ const TaxRecords: React.FC = () => {
                         'Authorization': `Token ${getTokenFromCookie()}`
                     }
                 });
-
             if (response.data.success) {
-                const record = response.data.record;
-                setRecords(records.map((item: any) => {
-                    if (item.id === record.id) {
-                        console.log('update record', record);
-                        return record;
-                    }
-                    return item;
-                }));
+                message.info('审核成功');
             } else {
                 message.error('审核失败');
             }
-
         } catch (error) {
             console.error(error);
+        } finally {
+            fetchRecords();
         }
 
     };
@@ -88,8 +81,15 @@ const TaxRecords: React.FC = () => {
                         'Authorization': `Token ${getTokenFromCookie()}`
                     }
                 });
+            if (response.data.success) {
+                message.info('审核成功');
+            } else {
+                message.error('审核失败');
+            }
         } catch (error) {
             console.error(error);
+        } finally {
+            fetchRecords();
         }
     };
 

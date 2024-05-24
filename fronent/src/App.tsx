@@ -7,7 +7,7 @@ import AddEmployee from './components/AddEmployee';
 import ViewEmployees from './components/ViewEmployees';
 import HandleTaxes from './components/HandleTaxes';
 import UploadTaxInfo from './components/SubmitTaxInfo';
-import GalaryDetails from './components/GalaryDetails';
+import SalaryDetails from './components/SalaryDetails';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Row, Col, Button } from 'antd';
 import AdminDashboard from './components/AdminDashboard';
@@ -148,13 +148,13 @@ const App: React.FC = () => {
             }
           />
           <Route
-            path="/unit/galary_details"
+            path="/unit/salary_details"
             element={
               <ProtectedRoute roles={['employee']}>
                 <Row gutter={24}>
                   <Col span={4} />
                   <Col span={16}>
-                    <GalaryDetails />
+                    <SalaryDetails />
                   </Col>
                   <Col span={4} />
                 </Row>

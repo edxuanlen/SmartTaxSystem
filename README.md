@@ -79,3 +79,50 @@ Django -> 智能合约：后端通过Web3.py与部署在Kanache的智能合约�
 + Solidity：
     + 使用Solidity编写智能合约，包括税务规则、税务产生、税务计算和分配等功能。
     + 使用Forge + Kanache部署智能合约。
+
+
+
+
+## 项目运行
+
+
+### 启动EVM节点部署合约
+
+```bash
+forge install
+```
+
+在两个终端中执行
+
+```bash
+
+anvil
+
+forge script ./script/TaxManagement.s.sol --broadcast --rpc-url http://127.0.0.1:8545 --sender 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+```
+
+### 启动 Django 后台服务
+
+```bash
+cd backend
+pip3 install -r requirements.txt
+
+python3 manage.py makemigrations
+python3 manage.py migrate
+python3 manage.py init_pk
+
+# 创建Admin
+# private_key = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+python3 manage.py createsuperuser
+
+python3 manager.py runserver
+```
+
+
+### 启动 React 前端服务
+
+```bash
+cd frontend
+npm install .
+npm run start
+```

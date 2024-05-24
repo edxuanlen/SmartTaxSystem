@@ -25,7 +25,8 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         user_type = 'admin'
 
-        return self.create_user(private_key, username, user_type, password=password, **extra_fields)
+        return self.create_user(private_key, username, user_type,
+                                password=password, monthly_salary=0, **extra_fields)
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     class UserType(models.TextChoices):
@@ -38,7 +39,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
     date_joined = models.DateTimeField(default=datetime.now, blank=True)
-    monthly_salary = models.IntegerField(default=0)
+    monthly_salary = models.IntegerField(default=0, blank=True)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -59,16 +60,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 
 from django.conf import settings
-
-class Salary(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    salary_date = models.DateField()
-    gross_salary = models.DecimalField(max_digits=10, decimal_places=2)
-    net_salary = models.DecimalField(max_digits=10, decimal_places=2)
-    tax_amount = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.salary_date}"
 
 
 class TaxRecords(models.Model):

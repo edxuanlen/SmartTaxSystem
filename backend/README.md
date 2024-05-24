@@ -16,6 +16,7 @@ pip3 install django-filter
 # 创建
 python3 manage.py makemigrations
 python3 manage.py migrate
+python3 manage.py init_pk
 
 # 创建Admin
 python manage.py createsuperuser

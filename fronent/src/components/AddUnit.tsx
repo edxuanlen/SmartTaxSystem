@@ -7,18 +7,21 @@ const { Title } = Typography;
 
 const AddUnit: React.FC = () => {
     const [form] = Form.useForm();
-    const [genPK, setGenPK] = useState(undefined);
 
     const getPrivateKey = async () => {
-        let response = await axios.get('/api/private_key/', {
-            headers: { 'Authorization': `Token ${getTokenFromCookie()}` }
-        });
-        if (response.data.pk) {
-            setGenPK(response.data.pk);
-            form.setFieldsValue({ private_key: response.data.pk }); // Update the form value
-            message.success('获取私钥成功');
-        } else {
+        try {
+            let response = await axios.get('/api/private_key/', {
+                headers: { 'Authorization': `Token ${getTokenFromCookie()}` }
+            });
+            if (response.data.pk) {
+                form.setFieldsValue({ private_key: response.data.pk }); // Update the form value
+                message.success('获取私钥成功');
+            } else {
+                message.error('获取私钥失败，请补充私钥');
+            }
+        } catch (error) {
             message.error('获取私钥失败，请补充私钥');
+        } finally {
         }
     };
 
@@ -34,6 +37,7 @@ const AddUnit: React.FC = () => {
             });
             if (response.data.user) {
                 message.success('新增单位成功');
+                getPrivateKey();
             } else {
                 message.error('Login failed: ' + response.data.message);
             }
@@ -58,7 +62,7 @@ const AddUnit: React.FC = () => {
                 label="私钥"
                 rules={[{ required: true, message: '请输入私钥' }]}
             >
-                <Input disabled value={genPK} />
+                <Input />
             </Form.Item>
             <Form.Item>
                 <Button type="primary" htmlType="submit">

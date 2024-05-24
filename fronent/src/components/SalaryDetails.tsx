@@ -8,28 +8,26 @@ import { ColumnsType } from 'antd/es/table';
 const columns: ColumnsType<any> = [
     {
         title: '发薪日期',
-        dataIndex: 'date_joined',
-        key: 'date_joined',
+        dataIndex: 'date',
+        key: 'date',
     },
     {
         title: '工资明细',
-        dataIndex: 'username',
-        key: 'username',
         children: [
             {
                 title: '税前',
-                dataIndex: 'name',
-                key: 'name',
+                dataIndex: 'monthly_salary',
+                key: 'monthly_salary',
             },
             {
                 title: '税后',
-                dataIndex: 'name',
-                key: 'name',
+                dataIndex: 'net_salary',
+                key: 'net_salary',
             },
             {
                 title: '扣税',
-                dataIndex: 'name',
-                key: 'name',
+                dataIndex: 'tax_amount',
+                key: 'tax_amount',
             },
         ]
     },
@@ -37,23 +35,23 @@ const columns: ColumnsType<any> = [
 ];
 
 const ViewEmployees: React.FC = () => {
-    const [employees, setEmployees] = useState([]);
+    const [records, setRecords] = useState([]);
 
+    const fetchSalaryRecords = async () => {
+        try {
+            const response = await axios.get('/api/salary_info/', {
+                headers: {
+                    'Authorization': `Token ${getTokenFromCookie()}`,
+                },
+            });
+
+            await setRecords(response.data.salary_infos);
+        } catch (error) {
+            console.error(error);
+        }
+    };
     useEffect(() => {
-        const fetchEmployees = async () => {
-            try {
-                const response = await axios.get('/api/salary_info/', {
-                    headers: {
-                        'Authorization': `Token ${getTokenFromCookie()}`,
-                    },
-                });
-
-                await setEmployees(response.data.employees);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-        fetchEmployees();
+        fetchSalaryRecords();
     }, []);
 
     return (
@@ -62,7 +60,7 @@ const ViewEmployees: React.FC = () => {
             <Table
                 rowKey="private_key"
                 columns={columns}
-                dataSource={employees}
+                dataSource={records}
                 pagination={false}
             />
         </div>
