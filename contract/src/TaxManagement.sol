@@ -39,7 +39,7 @@ contract TaxManagement {
     mapping(address => Employee) public employees;
     mapping(address => TaxInfo) public taxInfos;
 
-    event EmployeeAdded(address indexed unitAddress, address indexed employeeAddress, uint256 monthlySalary);
+    event UpsertEmployee(address indexed unitAddress, address indexed employeeAddress, uint256 monthlySalary);
     event UnitAdded(address indexed unitAddress);
     event TaxCalculated(address indexed employeeAddress, uint256 taxAmount, uint256 netSalary);
     event TaxSettlement(address indexed unitAddress, uint256 totalTaxDue);
@@ -82,7 +82,7 @@ contract TaxManagement {
     function addUnit(address _unitAddress) public onlyAdmin {
         require(units[_unitAddress].unitAddress == address(0), "Unit already exists");
         units[_unitAddress] = Unit(_unitAddress, new address[](0), 0);
-        rmbToken.mint(_unitAddress, 100000); // Mint 100,000 RMB Token
+        rmbToken.mint(_unitAddress, 1000000000); // Mint 100,000,000 RMB Token
         emit UnitAdded(_unitAddress);
     }
 
@@ -90,7 +90,13 @@ contract TaxManagement {
         require(employees[_employeeAddress].employeeAddress == address(0), "Employee already exists");
         employees[_employeeAddress] = Employee(_employeeAddress, _monthlySalary, msg.sender);
         units[msg.sender].employees.push(_employeeAddress);
-        emit EmployeeAdded(msg.sender, _employeeAddress, _monthlySalary);
+        emit UpsertEmployee(msg.sender, _employeeAddress, _monthlySalary);
+    }
+
+    function updateSalary(address _employeeAddress, uint256 _monthlySalary) public onlyUnit {
+        employees[_employeeAddress] = Employee(_employeeAddress, _monthlySalary, msg.sender);
+        units[msg.sender].employees.push(_employeeAddress);
+        emit UpsertEmployee(msg.sender, _employeeAddress, _monthlySalary);
     }
 
     function calculateTax(uint256 income) public view returns (uint256 taxDue) {
@@ -124,8 +130,8 @@ contract TaxManagement {
         emit TaxCalculated(_employeeAddress, taxAmount, netSalary);
     }
 
-    function () public onlyUnit {
-        Unit stsettleTaxesorage unit = units[msg.sender];
+    function settleTaxes() public onlyUnit {
+        Unit storage unit = units[msg.sender];
         uint256 totalTaxDue = 0;
 
         for (uint256 i = 0; i < unit.employees.length; i++) {

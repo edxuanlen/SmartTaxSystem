@@ -104,6 +104,87 @@ def create_employee(request):
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
+def update_salary(request):
+
+    if request.user.user_type != User.UserType.UNIT:
+        return JsonResponse({'error': 'Only units can create employees.'}, status=403)
+    data = request.data
+
+    user_query = User.objects.filter(id=data['user_id'])
+    user_query.update(
+        monthly_salary=data['monthly_salary']
+    )
+
+    user = user_query[0]
+
+    try:
+        unit_address = Web3Provider.eth.account.from_key(request.user.private_key).address
+        employee_address = Web3Provider.eth.account.from_key(user.private_key).address
+
+        # 构建交易
+        nonce = Web3Provider.eth.get_transaction_count(unit_address)
+        transaction = TaxMgrContract.functions.updateSalary(
+            employee_address, int(user.monthly_salary)).build_transaction({
+            'from': unit_address,
+            'nonce': nonce,
+        })
+        print("transaction: ", transaction)
+
+        submit_txn(request.user.private_key, transaction)
+    except Exception as e:
+        print(e)
+        return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'status': 'employee created',
+                         'user': UserSerializer(user).data})
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def salary_history(request):
+
+    employee_id = request.query_params['employee_id']
+    user = User.objects.get(id=employee_id)
+
+    try:
+        # 获取账户
+        account =  Web3Provider.eth.account.from_key(user.private_key)
+        print("Account: ", account)
+
+        # 获取最新区块
+        latest_block = Web3Provider.eth.block_number
+
+        # 定义事件过滤器，假设事件名为TaxCalculated
+        event_filter = TaxMgrContract.events.UpsertEmployee.create_filter(
+            fromBlock=0,  # 可调整为特定区块范围
+            toBlock=latest_block,
+            argument_filters={'employeeAddress': account.address}
+        )
+
+        # 获取事件日志
+        events = event_filter.get_all_entries()
+        salaries = []
+
+        for event in events:
+            dt = datetime.datetime.fromtimestamp(
+            Web3Provider.eth.get_block(event.blockNumber).timestamp)
+            date = dt.strftime('%Y-%m-%d %H:%M:%S')
+
+            salaries.append({
+                'date': date,
+                'monthly_salary': event['args']['monthlySalary']
+            })
+        return JsonResponse({'salaries': salaries})
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def create_unit(request):
     if request.user.user_type != User.UserType.ADMIN:
         return JsonResponse({'error': 'Only ADMIN can create units.'}, status=403)
@@ -149,11 +230,16 @@ def create_unit(request):
 @permission_classes([IsAuthenticated])
 def get_employees(request):
     try:
-        employees = User.objects.filter(created_by=request.user)
+        if request.query_params.get('unit_id'):
+            unit_id = request.query_params['unit_id']
+            employees = User.objects.filter(created_by_id=unit_id)
+        else:
+            employees = User.objects.filter(created_by=request.user)
 
         return JsonResponse({'employees': UserSerializer(employees, many=True).data})
     except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+        print(e)
+        return JsonResponse({'error': str(e)}, status=400)
 
 
 @api_view(['GET'])
@@ -200,7 +286,7 @@ def get_salary_info(request):
                 'net_salary': event['args']['netSalary'],
             })
 
-            return JsonResponse({'salary_infos': salary_infos})
+        return JsonResponse({'salary_infos': salary_infos})
 
     except Exception as e:
         print(e)

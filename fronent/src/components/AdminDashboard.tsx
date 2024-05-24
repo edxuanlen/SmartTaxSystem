@@ -13,9 +13,12 @@ const AdminDashboard = () => {
                     <Link to="/admin/add_unit">新增单位</Link>
                 </Menu.Item>
                 <Menu.Item key="2">
-                    <Link to="/admin/unit_records">税务系统</Link>
+                    <Link to="/admin/taxpayer">纳税信息管理</Link>
                 </Menu.Item>
                 <Menu.Item key="3">
+                    <Link to="/admin/unit_records">税务系统</Link>
+                </Menu.Item>
+                <Menu.Item key="4">
                     <Link to="/admin/backend">后台管理</Link>
                 </Menu.Item>
             </Menu>

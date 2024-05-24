@@ -108,9 +108,14 @@ cd backend
 pip3 install -r requirements.txt
 
 # 初始化数据库
+python3 manage.py migrate taxSystem zero
 python3 manage.py makemigrations
 python3 manage.py migrate
 python3 manage.py init_pk
+
+# 构造测试数据
+python3 manage.py init_test_data
+
 
 # 创建Admin
 # private_key = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80

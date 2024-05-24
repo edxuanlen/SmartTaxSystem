@@ -15,6 +15,7 @@ import AddUnit from './components/AddUnit';
 import TaxRecords from './components/TaxRecords';
 import Backend from './components/Backend';
 import { getCookieByKey, getCookies } from './utils/cookie';
+import TaxPayerInfos from './components/TaxPayerInfos';
 
 
 const ProtectedRoute: React.FC<{ children: JSX.Element; roles: string[] }> = ({ children, roles }) => {
@@ -82,6 +83,21 @@ const App: React.FC = () => {
                   </Col>
                   <Col span={18}>
                     <h1> Welcome to Admin Dashboard! </h1>
+                  </Col>
+                </Row>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/taxpayer"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <Row gutter={24}>
+                  <Col span={6}>
+                    <AdminDashboard />
+                  </Col>
+                  <Col span={18}>
+                    <TaxPayerInfos />
                   </Col>
                 </Row>
               </ProtectedRoute>
