@@ -4,17 +4,6 @@ from django.utils.translation import gettext_lazy as _
 from datetime import datetime
 # Create your models here.
 
-# class Employee(models.Model):
-#     name = models.CharField(max_length=100)
-#     salary = models.DecimalField(max_digits=10, decimal_places=2)
-#     # 其他字段...
-
-# class TaxRecord(models.Model):
-#     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-#     pre_tax_salary = models.DecimalField(max_digits=10, decimal_places=2)
-#     post_tax_salary = models.DecimalField(max_digits=10, decimal_places=2)
-#     # 其他字段...
-
 class CustomUserManager(BaseUserManager):
     def create_user(self, private_key, username, user_type, monthly_salary=None,
                     created_by=None, password=None, **extra_fields):
@@ -80,3 +69,26 @@ class Salary(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.salary_date}"
+
+
+class TaxRecords(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    remaining_tax = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_date = models.DateTimeField()
+    date_submit = models.DateTimeField(default=datetime.now, blank=True)
+    audit_status = models.IntegerField(default=0)
+    approve_status = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.payment_date}"
+
+
+class PrivateKey(models.Model):
+    private_key = models.CharField(max_length=128, unique=True)
+    used = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.private_key}"
+
+

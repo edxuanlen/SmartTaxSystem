@@ -12,10 +12,10 @@ for transaction in data['transactions']:
     contract_name = transaction.get('contractName')
     contract_address = Web3.to_checksum_address(transaction.get('contractAddress'))
     if contract_name == 'TaxManagement':
-        taxmgr_contract_address = contract_address
+        TaxmgrContractAddress = contract_address
 
 
-print("TaxManagement contract address: ", taxmgr_contract_address)
+print("TaxManagement contract address: ", TaxmgrContractAddress)
 
 
 # 配置 web3 contract 实例
@@ -31,7 +31,7 @@ with open('../contract/out/TaxManagement.sol/TaxManagement.json', 'r') as f:
 Web3Provider = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
 
 
-TaxMgrContract = Web3Provider.eth.contract(address=taxmgr_contract_address, abi=taxmgr_abi)
+TaxMgrContract = Web3Provider.eth.contract(address=TaxmgrContractAddress, abi=taxmgr_abi)
 
 rmbtk_contract_address = TaxMgrContract.functions.getRMBTokenAddress().call()
 taxtk_contract_address = TaxMgrContract.functions.getTaxTokenAddress().call()

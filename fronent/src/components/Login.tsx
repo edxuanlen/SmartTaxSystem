@@ -25,7 +25,7 @@ const Login: React.FC = () => {
                     navigate('/unit');
                     break;
                 case 'employee':
-                    navigate('/galary_details');
+                    navigate('/unit/galary_details');
                     break;
                 case undefined:
                     navigate('/');
@@ -58,7 +58,7 @@ const Login: React.FC = () => {
                         navigate('/unit');
                         break;
                     case 'employee':
-                        navigate('/galary_details');
+                        navigate('/unit/galary_details');
                         break;
                 };
                 window.location.reload();

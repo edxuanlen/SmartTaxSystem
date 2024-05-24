@@ -2,26 +2,29 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Login from './components/Login';
-import Dashboard from './components/Dashboard';
+import UnitDashboard from './components/UnitDashboard';
 import AddEmployee from './components/AddEmployee';
 import ViewEmployees from './components/ViewEmployees';
 import HandleTaxes from './components/HandleTaxes';
-import UploadTaxInfo from './components/UploadTaxInfo';
+import UploadTaxInfo from './components/SubmitTaxInfo';
 import GalaryDetails from './components/GalaryDetails';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Row, Col, Button } from 'antd';
-import { time } from 'console';
-import { getCookieByKey, getCookies, getTokenFromCookie } from './utils/cookie';
+import AdminDashboard from './components/AdminDashboard';
+import AddUnit from './components/AddUnit';
+import TaxRecords from './components/TaxRecords';
+import Backend from './components/Backend';
+import { getCookieByKey, getCookies } from './utils/cookie';
 
 
 const ProtectedRoute: React.FC<{ children: JSX.Element; roles: string[] }> = ({ children, roles }) => {
-  const { user } = useAuth();
+  const cookies = getCookies();
 
-  if (!user) {
+  if (!(cookies?.user_type)) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!roles.includes(user.user_type)) {
+  if (!roles.includes(cookies?.user_type)) {
     return <Navigate to="/login" replace />;
   }
 
@@ -55,8 +58,6 @@ const App: React.FC = () => {
     const lastDotIndex = path.lastIndexOf('/');
     if (lastDotIndex !== -1) {
       const extractedSuffix = path.slice(lastDotIndex + 1);
-
-      console.log("extractedSuffix: ", extractedSuffix);
       if (extractedSuffix === 'logout') {
         onLogout();
       }
@@ -75,15 +76,59 @@ const App: React.FC = () => {
             path="/admin"
             element={
               <ProtectedRoute roles={['admin']}>
-                {(() => {
-                  const cookies = getCookies();
-                  console.log(cookies);
-                  if (cookies?.token !== undefined &&
-                    cookies?.user_type == 'admin') {
-                    window.location.href = 'http://127.0.0.1:8000/admin';
-                  }
-                  return <div />;
-                })()}
+                <Row gutter={24}>
+                  <Col span={6}>
+                    <AdminDashboard />
+                  </Col>
+                  <Col span={18}>
+                    <h1> Welcome to Admin Dashboard! </h1>
+                  </Col>
+                </Row>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/backend"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <Row gutter={24}>
+                  <Col span={6}>
+                    <AdminDashboard />
+                  </Col>
+                  <Col span={18}>
+                    <Backend />
+                  </Col>
+                </Row>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/add_unit"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <Row gutter={24}>
+                  <Col span={6}>
+                    <AdminDashboard />
+                  </Col>
+                  <Col span={18}>
+                    <AddUnit />
+                  </Col>
+                </Row>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/unit_records"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <Row gutter={24}>
+                  <Col span={6}>
+                    <AdminDashboard />
+                  </Col>
+                  <Col span={18}>
+                    <TaxRecords />
+                  </Col>
+                </Row>
               </ProtectedRoute>
             }
           />
@@ -93,7 +138,7 @@ const App: React.FC = () => {
               <ProtectedRoute roles={['unit']}>
                 <Row gutter={24}>
                   <Col span={6}>
-                    <Dashboard />
+                    <UnitDashboard />
                   </Col>
                   <Col span={18}>
                     <h1> Welcome to Unit Dashboard! </h1>
@@ -103,7 +148,7 @@ const App: React.FC = () => {
             }
           />
           <Route
-            path="/galary_details"
+            path="/unit/galary_details"
             element={
               <ProtectedRoute roles={['employee']}>
                 <Row gutter={24}>
@@ -117,12 +162,12 @@ const App: React.FC = () => {
             }
           />
           <Route
-            path="/add-employee"
+            path="/unit/add_employee"
             element={
               <ProtectedRoute roles={['unit']}>
                 <Row gutter={24}>
                   <Col span={6}>
-                    <Dashboard />
+                    <UnitDashboard />
                   </Col>
                   <Col span={18}>
                     <AddEmployee />
@@ -132,12 +177,12 @@ const App: React.FC = () => {
             }
           />
           <Route
-            path="/view-employees"
+            path="/unit/view_employees"
             element={
               <ProtectedRoute roles={['unit']}>
                 <Row gutter={24}>
                   <Col span={6}>
-                    <Dashboard />
+                    <UnitDashboard />
                   </Col>
                   <Col span={18}>
                     <ViewEmployees />
@@ -147,12 +192,12 @@ const App: React.FC = () => {
             }
           />
           <Route
-            path="/handle-taxes"
+            path="/unit/handle_taxes"
             element={
               <ProtectedRoute roles={['unit']}>
                 <Row gutter={24}>
                   <Col span={6}>
-                    <Dashboard />
+                    <UnitDashboard />
                   </Col>
                   <Col span={18}>
                     <HandleTaxes />
@@ -162,12 +207,12 @@ const App: React.FC = () => {
             }
           />
           <Route
-            path="/upload-tax-info"
+            path="/unit/upload_tax_info"
             element={
               <ProtectedRoute roles={['unit']}>
                 <Row gutter={24}>
                   <Col span={6}>
-                    <Dashboard />
+                    <UnitDashboard />
                   </Col>
                   <Col span={18}>
                     <UploadTaxInfo />
