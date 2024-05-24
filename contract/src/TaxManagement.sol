@@ -119,13 +119,13 @@ contract TaxManagement {
         taxInfos[_employeeAddress] = TaxInfo(taxAmount, netSalary);
 
         taxToken.mint(_employeeAddress, taxAmount); // Mint Tax Token to the unit
-        taxToken.transferFrom(_employeeAddress, msg.sender, taxAmount); // Transfer Tax Token to admin
+        taxToken.transferFrom(_employeeAddress, msg.sender, taxAmount); // Transfer Tax Token to unit
 
         emit TaxCalculated(_employeeAddress, taxAmount, netSalary);
     }
 
-    function settleTaxes() public onlyUnit {
-        Unit storage unit = units[msg.sender];
+    function () public onlyUnit {
+        Unit stsettleTaxesorage unit = units[msg.sender];
         uint256 totalTaxDue = 0;
 
         for (uint256 i = 0; i < unit.employees.length; i++) {
